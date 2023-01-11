@@ -7,7 +7,7 @@ public class minesweeper extends Application {
 
 	@Override
 	public void start(Stage stage) throws Exception {
-	stage.setTitle("Minesweeper 2");
+	stage.setTitle("Minesweeper 3");
 	
 	GridPane gridPane = new GridPane();
 	
