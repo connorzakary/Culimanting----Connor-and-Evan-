@@ -10,7 +10,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import java.lang.Math;
-
+/**
+ * The graphics and some of the logic for Minesweeper
+ * @author C. Zakary
+ *
+ */
 public class minesweeper extends Application {
 	public static void main(String[] args) {
 		Application.launch(args);
@@ -36,10 +40,11 @@ public class minesweeper extends Application {
 	Image eight = new Image("8.png");
 	Image checkedTile = new Image("bigGreyTile.png");
 	Image flag = new Image("Flag.png");
+	Image incorrectFlag = new Image("incorrectFlag.png");
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		stage.setTitle("Minesweeper");
+		stage.setTitle("Minesweeper!");
 
 		GridPane gridPane = new GridPane();
 		Scene scene = new Scene(gridPane, WIDTH, HEIGHT);
@@ -87,7 +92,7 @@ public class minesweeper extends Application {
 			}
 
 		}
-
+		ArrayList<NewButton> flaggedTiles = new ArrayList<>();
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
 
@@ -103,6 +108,8 @@ public class minesweeper extends Application {
 				ImageView baseTileView = new ImageView(baseTile);
 				ImageView checkedTileView = new ImageView(checkedTile);
 				ImageView flagView = new ImageView(flag);
+				
+
 				int count = countNeighbours(getNeighbours(board[j][i]));
 
 				System.out.println(i + " , " + j + " count = " + count);
@@ -110,33 +117,36 @@ public class minesweeper extends Application {
 				board[i][j].setGraphic(baseTileView);
 
 				board[i][j].setOnMouseClicked(e -> {
-					if (e.getButton() == MouseButton.SECONDARY) {
+					if (e.getButton() == MouseButton.SECONDARY) { // add and game is not over (maybe add it in the below
+																	// if statements )
 						if (((NewButton) e.getSource()).isFlagged()) {
 							((NewButton) e.getSource()).removeFlag();
 							((NewButton) e.getSource()).setGraphic(baseTileView);
-						} else if(((NewButton) e.getSource()).isRevealed()== false){
+							flaggedTiles.remove(e.getSource());
+						} else if (((NewButton) e.getSource()).isRevealed() == false) {
 
 							((NewButton) e.getSource()).setGraphic(flagView);
 							((NewButton) e.getSource()).makeFlagged();
+							flaggedTiles.add((NewButton) e.getSource());
 						}
 					}
 					if (e.getButton() == MouseButton.PRIMARY) {
-						System.out.println(((NewButton) e.getSource()).getCol() + "," + ((NewButton) e.getSource()).getRow());
+						System.out.println(
+								((NewButton) e.getSource()).getCol() + "," + ((NewButton) e.getSource()).getRow());
 						System.out.println(countNeighbours(getNeighbours((NewButton) e.getSource())));
 						System.out.println(((NewButton) e.getSource()).isFlagged());
 
-						if (((NewButton) e.getSource()).isBomb() && isGameOn == true
-								&& ((NewButton) e.getSource()).isFlagged() == false) {
+						if (((NewButton) e.getSource()).isBomb() && ((NewButton) e.getSource()).isFlagged() == false && isGameOn == true) {
 							((NewButton) e.getSource()).setGraphic(bombView);
 							((NewButton) e.getSource()).reveal();
-							 isGameOn = false;
+							isGameOn = false;
 
 						}
 						if (count == 1 && !((NewButton) e.getSource()).isBomb() && isGameOn == true
 								&& ((NewButton) e.getSource()).isFlagged() == false) {
 							((NewButton) e.getSource()).setGraphic(oneView);
 							((NewButton) e.getSource()).reveal();
-							
+
 						}
 						if (count == 2 && !((NewButton) e.getSource()).isBomb() && isGameOn == true
 								&& ((NewButton) e.getSource()).isFlagged() == false) {
@@ -178,9 +188,19 @@ public class minesweeper extends Application {
 							((NewButton) e.getSource()).setGraphic(checkedTileView);
 							((NewButton) e.getSource()).reveal();
 						}
-						
+
+					}
+					if (isGameOn == false) {
+						for (int k = 0; k < flaggedTiles.size(); k++) {
+							ImageView falseFlagView = new ImageView(incorrectFlag);
+							if (checkFlag(flaggedTiles.get(k)) == false) {
+								flaggedTiles.get(k).setGraphic(falseFlagView);
+							}
+						}
+
 					}
 				});
+				
 
 			}
 
@@ -189,7 +209,11 @@ public class minesweeper extends Application {
 		stage.setScene(scene);
 		stage.show();
 	}
-
+/**
+ * Gets the coordinates of the 8 surrounding tiles of a given tile
+ * @param button the given tile 
+ * @return an ArrayList of the coordinates of the surrounding tiles
+ */
 	private ArrayList<NewButton> getNeighbours(NewButton button) {
 		ArrayList<NewButton> neighbours = new ArrayList<>();
 
@@ -210,7 +234,11 @@ public class minesweeper extends Application {
 		return neighbours;
 
 	}
-
+/**
+ * Counts how many of the surrounding neighbours are bombs
+ * @param neighbours An ArrayList of the 8 surrounding tiles coordinates
+ * @return the number of bombs surrounding a the tile
+ */
 	private int countNeighbours(ArrayList<NewButton> neighbours) {
 		int count = 0;
 		for (int i = 0; i < neighbours.size(); i++) {
@@ -220,6 +248,18 @@ public class minesweeper extends Application {
 
 		}
 		return count;
+	}
+/**
+ * Checks if a given tile is flagged, if so, checks if it is correctly flagged
+ * @param button The tile to be checked for flagging accuracy 
+ * @return if the tile is correctly flagged or not
+ */
+	private boolean checkFlag(NewButton button) {
+		boolean isCorrect = false;
+		if (button.isBomb() == true && button.isFlagged() == true) {
+			isCorrect = true;
+		}
+		return isCorrect;
 	}
 
 }
