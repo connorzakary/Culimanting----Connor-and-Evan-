@@ -3,16 +3,21 @@ import java.util.Random;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import java.lang.Math;
+
 /**
  * The graphics and some of the logic for Minesweeper
- * @author C. Zakary
+ * 
+ * @author C. Zakary & E.Apostolidis
  *
  */
 public class minesweeper extends Application {
@@ -24,9 +29,11 @@ public class minesweeper extends Application {
 	private final double HEIGHT = 800;
 	private final int ROWS = 8;
 	private final int COLS = 8;
-	private int bombsToBePlaced = 16;
+	private int bombsToBePlaced = 10;
 	private boolean isGameOn = true;
 
+	//Import all the images 
+	
 	private NewButton board[][] = new NewButton[ROWS][COLS];
 	Image baseTile = new Image("BaseTile.png");
 	Image bomb = new Image("Bomb.PNG");
@@ -45,14 +52,20 @@ public class minesweeper extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 		stage.setTitle("Minesweeper!");
+		StackPane sp = new StackPane();
 
+		Font titleFont = new Font("Arial", 40);
+		
+		
 		GridPane gridPane = new GridPane();
-		Scene scene = new Scene(gridPane, WIDTH, HEIGHT);
 		gridPane.setAlignment(Pos.TOP_CENTER);
+		sp.getChildren().addAll(gridPane);
+
+		Scene scene = new Scene(sp, WIDTH, HEIGHT);
 
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
-
+				//Creating the board and populating it with tiles
 				ImageView baseTileView = new ImageView(baseTile);
 
 				board[i][j] = new NewButton(i, j);
@@ -62,27 +75,24 @@ public class minesweeper extends Application {
 				board[i][j].setPrefSize(WIDTH / COLS, HEIGHT / ROWS);
 				board[i][j].setGraphic(baseTileView);
 
-				// List the coordinates of neighbours when clicked TEST
-				board[i][j].setOnAction(e -> {
-
-					System.out.println(countNeighbours(getNeighbours((NewButton) e.getSource())));
-					System.out.println(((NewButton) e.getSource()).isBomb());
-				});
+				
+				
 			}
 		}
+		//Adding all the tiles to a gridpane 
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
 				gridPane.add(board[i][j], j, i);
 
 			}
 		}
-
+		//Placing bombs on the grid randomly
 		while (bombsToBePlaced > 0) {
 			int max = 8;
 			int min = 0;
 			int randRow = (int) ((Math.random() * (max - min)) + min);
 			int randCol = (int) ((Math.random() * (max - min)) + min);
-			System.out.println(randRow + " , " + randCol);
+
 			if (board[randRow][randCol].isBomb() != true) {
 
 				board[randRow][randCol].makeBomb();
@@ -92,6 +102,7 @@ public class minesweeper extends Application {
 			}
 
 		}
+		//Adding functionality to the tiles, when clicked reveals what the tile holds. Ends game if tile is bomb.
 		ArrayList<NewButton> flaggedTiles = new ArrayList<>();
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
@@ -108,35 +119,31 @@ public class minesweeper extends Application {
 				ImageView baseTileView = new ImageView(baseTile);
 				ImageView checkedTileView = new ImageView(checkedTile);
 				ImageView flagView = new ImageView(flag);
-				
 
 				int count = countNeighbours(getNeighbours(board[j][i]));
-
-				System.out.println(i + " , " + j + " count = " + count);
 
 				board[i][j].setGraphic(baseTileView);
 
 				board[i][j].setOnMouseClicked(e -> {
-					if (e.getButton() == MouseButton.SECONDARY) { // add and game is not over (maybe add it in the below
-																	// if statements )
-						if (((NewButton) e.getSource()).isFlagged()) {
+					//Adding flags to tiles when you right click them
+					if (e.getButton() == MouseButton.SECONDARY) { 
+						if (((NewButton) e.getSource()).isFlagged() && isGameOn == true) {
 							((NewButton) e.getSource()).removeFlag();
 							((NewButton) e.getSource()).setGraphic(baseTileView);
 							flaggedTiles.remove(e.getSource());
-						} else if (((NewButton) e.getSource()).isRevealed() == false) {
+						
+						} else if (((NewButton) e.getSource()).isRevealed() == false && isGameOn == true) {
 
 							((NewButton) e.getSource()).setGraphic(flagView);
 							((NewButton) e.getSource()).makeFlagged();
 							flaggedTiles.add((NewButton) e.getSource());
 						}
 					}
+					//Revealing tiles when they are left clicked
 					if (e.getButton() == MouseButton.PRIMARY) {
-						System.out.println(
-								((NewButton) e.getSource()).getCol() + "," + ((NewButton) e.getSource()).getRow());
-						System.out.println(countNeighbours(getNeighbours((NewButton) e.getSource())));
-						System.out.println(((NewButton) e.getSource()).isFlagged());
 
-						if (((NewButton) e.getSource()).isBomb() && ((NewButton) e.getSource()).isFlagged() == false && isGameOn == true) {
+						if (((NewButton) e.getSource()).isBomb() && ((NewButton) e.getSource()).isFlagged() == false
+								&& isGameOn == true) {
 							((NewButton) e.getSource()).setGraphic(bombView);
 							((NewButton) e.getSource()).reveal();
 							isGameOn = false;
@@ -190,6 +197,7 @@ public class minesweeper extends Application {
 						}
 
 					}
+					//Ending game, shows which flags were correct and shows game over screen. Also stops button functionality 
 					if (isGameOn == false) {
 						for (int k = 0; k < flaggedTiles.size(); k++) {
 							ImageView falseFlagView = new ImageView(incorrectFlag);
@@ -197,10 +205,12 @@ public class minesweeper extends Application {
 								flaggedTiles.get(k).setGraphic(falseFlagView);
 							}
 						}
+						Label gameOver = new Label("Game Over!");
 
+						gameOver.setFont(titleFont);
+						sp.getChildren().add(gameOver);
 					}
 				});
-				
 
 			}
 
@@ -209,11 +219,13 @@ public class minesweeper extends Application {
 		stage.setScene(scene);
 		stage.show();
 	}
-/**
- * Gets the coordinates of the 8 surrounding tiles of a given tile
- * @param button the given tile 
- * @return an ArrayList of the coordinates of the surrounding tiles
- */
+
+	/**
+	 * Gets the coordinates of the 8 surrounding tiles of a given tile
+	 * 
+	 * @param button the given tile
+	 * @return an ArrayList of the coordinates of the surrounding tiles
+	 */
 	private ArrayList<NewButton> getNeighbours(NewButton button) {
 		ArrayList<NewButton> neighbours = new ArrayList<>();
 
@@ -234,11 +246,13 @@ public class minesweeper extends Application {
 		return neighbours;
 
 	}
-/**
- * Counts how many of the surrounding neighbours are bombs
- * @param neighbours An ArrayList of the 8 surrounding tiles coordinates
- * @return the number of bombs surrounding a the tile
- */
+
+	/**
+	 * Counts how many of the surrounding neighbours are bombs
+	 * 
+	 * @param neighbours An ArrayList of the 8 surrounding tiles coordinates
+	 * @return the number of bombs surrounding a the tile
+	 */
 	private int countNeighbours(ArrayList<NewButton> neighbours) {
 		int count = 0;
 		for (int i = 0; i < neighbours.size(); i++) {
@@ -249,11 +263,13 @@ public class minesweeper extends Application {
 		}
 		return count;
 	}
-/**
- * Checks if a given tile is flagged, if so, checks if it is correctly flagged
- * @param button The tile to be checked for flagging accuracy 
- * @return if the tile is correctly flagged or not
- */
+
+	/**
+	 * Checks if a given tile is flagged, if so, checks if it is correctly flagged
+	 * 
+	 * @param button The tile to be checked for flagging accuracy
+	 * @return if the tile is correctly flagged or not
+	 */
 	private boolean checkFlag(NewButton button) {
 		boolean isCorrect = false;
 		if (button.isBomb() == true && button.isFlagged() == true) {
