@@ -32,8 +32,8 @@ public class minesweeper extends Application {
 	private int bombsToBePlaced = 10;
 	private boolean isGameOn = true;
 
-	//Import all the images 
-	
+	// Import all the images
+
 	private NewButton board[][] = new NewButton[ROWS][COLS];
 	Image baseTile = new Image("BaseTile.png");
 	Image bomb = new Image("Bomb.PNG");
@@ -55,8 +55,7 @@ public class minesweeper extends Application {
 		StackPane sp = new StackPane();
 
 		Font titleFont = new Font("Arial", 40);
-		
-		
+
 		GridPane gridPane = new GridPane();
 		gridPane.setAlignment(Pos.TOP_CENTER);
 		sp.getChildren().addAll(gridPane);
@@ -65,7 +64,7 @@ public class minesweeper extends Application {
 
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
-				//Creating the board and populating it with tiles
+				// Creating the board and populating it with tiles
 				ImageView baseTileView = new ImageView(baseTile);
 
 				board[i][j] = new NewButton(i, j);
@@ -75,18 +74,16 @@ public class minesweeper extends Application {
 				board[i][j].setPrefSize(WIDTH / COLS, HEIGHT / ROWS);
 				board[i][j].setGraphic(baseTileView);
 
-				
-				
 			}
 		}
-		//Adding all the tiles to a gridpane 
+		// Adding all the tiles to a gridpane
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
 				gridPane.add(board[i][j], j, i);
 
 			}
 		}
-		//Placing bombs on the grid randomly
+		// Placing bombs on the grid randomly
 		while (bombsToBePlaced > 0) {
 			int max = 8;
 			int min = 0;
@@ -102,7 +99,8 @@ public class minesweeper extends Application {
 			}
 
 		}
-		//Adding functionality to the tiles, when clicked reveals what the tile holds. Ends game if tile is bomb.
+		// Adding functionality to the tiles, when clicked reveals what the tile holds.
+		// Ends game if tile is bomb.
 		ArrayList<NewButton> flaggedTiles = new ArrayList<>();
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLS; j++) {
@@ -125,13 +123,13 @@ public class minesweeper extends Application {
 				board[i][j].setGraphic(baseTileView);
 
 				board[i][j].setOnMouseClicked(e -> {
-					//Adding flags to tiles when you right click them
-					if (e.getButton() == MouseButton.SECONDARY) { 
+					// Adding flags to tiles when you right click them
+					if (e.getButton() == MouseButton.SECONDARY) {
 						if (((NewButton) e.getSource()).isFlagged() && isGameOn == true) {
 							((NewButton) e.getSource()).removeFlag();
 							((NewButton) e.getSource()).setGraphic(baseTileView);
 							flaggedTiles.remove(e.getSource());
-						
+
 						} else if (((NewButton) e.getSource()).isRevealed() == false && isGameOn == true) {
 
 							((NewButton) e.getSource()).setGraphic(flagView);
@@ -139,7 +137,7 @@ public class minesweeper extends Application {
 							flaggedTiles.add((NewButton) e.getSource());
 						}
 					}
-					//Revealing tiles when they are left clicked
+					// Revealing tiles when they are left clicked
 					if (e.getButton() == MouseButton.PRIMARY) {
 
 						if (((NewButton) e.getSource()).isBomb() && ((NewButton) e.getSource()).isFlagged() == false
@@ -197,7 +195,8 @@ public class minesweeper extends Application {
 						}
 
 					}
-					//Ending game, shows which flags were correct and shows game over screen. Also stops button functionality 
+					// Ending game, shows which flags were correct and shows game over screen. Also
+					// stops button functionality
 					if (isGameOn == false) {
 						for (int k = 0; k < flaggedTiles.size(); k++) {
 							ImageView falseFlagView = new ImageView(incorrectFlag);
@@ -205,11 +204,13 @@ public class minesweeper extends Application {
 								flaggedTiles.get(k).setGraphic(falseFlagView);
 							}
 						}
-						Label gameOver = new Label("Game Over!");
+						Label gameOverLose = new Label("Game Over!");
 
-						gameOver.setFont(titleFont);
-						sp.getChildren().add(gameOver);
+						gameOverLose.setFont(titleFont);
+						sp.getChildren().add(gameOverLose);
+
 					}
+
 				});
 
 			}
